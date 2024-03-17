@@ -84,10 +84,16 @@ ${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter"
 ${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library"
 
 # TODO: Add library dependencies to rootfs
-cp ${FINDER_APP_DIR}/ld-linux-aarch64.so.1 ${OUTDIR}/rootfs/lib/
-cp ${FINDER_APP_DIR}/libm.so.6 ${OUTDIR}/rootfs/lib64/
-cp ${FINDER_APP_DIR}/libresolv.so.2 ${OUTDIR}/rootfs/lib64/
-cp ${FINDER_APP_DIR}/libc.so.6 ${OUTDIR}/rootfs/lib64/
+echo "Add library dependencies to rootfs"
+SYSROOT=$(${CROSS_COMPILE}gcc -print-sysroot)
+INTERPRETER=$(find $SYSROOT -name "ld-linux-aarch64.so.1")
+cp ${INTERPRETER} ${OUTDIR}/rootfs/lib
+SHARED_LIB_1=$(find $SYSROOT -name "libm.so.6")
+cp ${SHARED_LIB_1} ${OUTDIR}/rootfs/lib64
+SHARED_LIB_2=$(find $SYSROOT -name "libresolv.so.2")
+cp ${SHARED_LIB_2} ${OUTDIR}/rootfs/lib64
+SHARED_LIB_3=$(find $SYSROOT -name "libc.so.6")
+cp ${SHARED_LIB_3} ${OUTDIR}/rootfs/lib64
 
 # TODO: Make device nodes
 cd "${OUTDIR}/rootfs/"
