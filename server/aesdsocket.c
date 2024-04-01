@@ -78,6 +78,7 @@ int main(int argc, char* argv[])
   {
     syslog(LOG_ERR, "getaddrinfo: %s\n", gai_strerror(s));
     closelog();
+    free(res);
     return -1;
   }
 
@@ -95,10 +96,23 @@ int main(int argc, char* argv[])
     closelog();
     return -1;
   }
-
-  if(argc == 2 && strcmp(argv[1],"-d") != 0)
+  free(res);
+  if(argc == 2 && (strcmp(argv[1],"-d") == 0))
   {
-    fork();
+    syslog(LOG_DEBUG, "starting a daemon\n");
+    int pid = fork();
+    if(pid < 0)
+    {
+      return -1;
+    }
+    else if(pid > 0) 
+    {
+      int status = -1;
+      return 0;
+    } 
+  }
+  else{
+    syslog(LOG_DEBUG, "not starting a daemon:%d\n",argc);
   }
 
   if(listen(sockfd, 5) < 0)
@@ -122,7 +136,7 @@ int main(int argc, char* argv[])
         close(clientsocket);
         close(fd);
         remove("/var/tmp/aesdsocketdata");
-        return -1;
+        return 0;
      }
      syslog(LOG_DEBUG, "Accepted connection from %s\n", inet_ntoa(client_address.sin_addr)); 
      int msg_size = 0;
